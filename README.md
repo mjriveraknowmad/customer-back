@@ -1,3 +1,7 @@
+# Aclaración de la fuente del repositorio
+El código de este repositorio es una fuente del curso:
+[git-github-actions-buenas-practicas-de-integracion-continua](https://www.udemy.com/course/git-github-actions-buenas-practicas-de-integracion-continua) y se usa como base para trastear con github.
+
 # Spring boot CRUD By [Sotobotero](https://sotobotero.com)
 [![Powered by @sotobotero](https://img.shields.io/badge/Powered%20by-%40sotobotero-blue?style=flat-square&logo=twitter)](https://twitter.com/sotobotero)
 [![Sotobotero.com](https://img.shields.io/badge/Powered%20by-sotobotero.com-blue?style=flat-square&logo=twitter)](https://sotobotero.com/)
