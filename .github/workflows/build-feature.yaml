@@ -1,38 +1,41 @@
-name: build and test feature branch
+name: Build Feature Branch
+
 on:
   pull_request:
     branches: [ develop ]
     types: [ opened, reopened ]
-jobs: 
+  push:
+    branches:
+      - 'feature/**'
+
+jobs:
   build-feature:
     runs-on: ubuntu-latest
+
     steps:
-      #############################################################
-      # 2- dowload code from feature branch , setup java 8 and check that source code is buildable
-      ########################################################
-      - uses: actions/checkout@v3
+      # Extrae el código del pull request para asegurar que estamos compilando el commit correcto del pull request
+      # más info: https://github.com/marketplace/actions/checkout#checkout-pull-request-head-commit-instead-of-merge-commit
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-          
-      - name: pull and checkout from git repository
-        run: |
-           echo "pulling and checking out from git repository"
 
-      - name: setup java 17 
-        uses: actions/setup-java@v3
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
         with:
-          distribution: 'temurin' # See 'Supported distributions' for available options
+          distribution: temurin
           java-version: '17'
 
+      # Más info https://github.com/actions/cache/blob/main/examples.md#java---maven
       - name: Cache Maven dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v6
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: build with maven
+      - name: Build with Maven
         run: |
           mvn clean test package
           echo "build with maven"
@@ -53,7 +56,7 @@ jobs:
       # 1- Dowload source code
       #Only a single commit is fetched by default, for the ref/SHA that triggered the workflow, Set fetch-depth: 0 to fetch all history for all branches and tags
       ########################################################
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           #Dowload the code from destination branch (develop)
           ref: ${{ github.base_ref }}
