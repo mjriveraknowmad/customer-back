@@ -84,7 +84,14 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.base_ref }}
 
-
-
-    
-      
+      ######################################################## 
+      # 4- Llama al workflow: publish-jar-as-artifact, pasandole como parámetro el nombre de la rama base (develop) desde donde se va a descargar el código fuente para compilarlo y generar el artifact
+      ######################################################## 
+      - name: trigger deploy artifact
+        if: success()
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          event-type: publish-artifact-event          
+          client-payload: '{ "base_branch": "${{ github.base_ref }}" }'
