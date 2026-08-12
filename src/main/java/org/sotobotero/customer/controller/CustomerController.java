@@ -36,8 +36,8 @@ public class CustomerController {
 
     @Operation(summary = "Get all customers")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Found the customers."),
-            @ApiResponse(responseCode = "404", description = "Not found the customers."),
+            @ApiResponse(responseCode = "200", description = "Found the customers"),
+            @ApiResponse(responseCode = "404", description = "Not found the customers"),
     })
     @GetMapping
     public ResponseEntity<List<Customer>> getAllcustomers() {
@@ -47,8 +47,8 @@ public class CustomerController {
 
     @Operation(summary = "Get a customer by id")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Found the customer."),
-            @ApiResponse(responseCode = "404", description = "Not found the customer."),
+            @ApiResponse(responseCode = "200", description = "Found the customer"),
+            @ApiResponse(responseCode = "404", description = "Not found the customer"),
     })
     @GetMapping("/{id}")
     public ResponseEntity<Customer> getcustomerById(@PathVariable("id") Long id) {
@@ -62,8 +62,8 @@ public class CustomerController {
 
     @Operation(summary = "Create a customer")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Create the customer."),
-            @ApiResponse(responseCode = "404", description = "Not create the customer."),
+            @ApiResponse(responseCode = "200", description = "Create the customer"),
+            @ApiResponse(responseCode = "404", description = "Not create the customer"),
     })  
 
     @PostMapping( consumes = MediaType.APPLICATION_JSON_VALUE,produces =  MediaType.APPLICATION_JSON_VALUE)
@@ -74,8 +74,8 @@ public class CustomerController {
 //generate update method for org.sotobotero.customer.entities.Customer entity
     @Operation(summary = "Update a customer")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Update the customer."),
-            @ApiResponse(responseCode = "404", description = "Not update the customer."),
+            @ApiResponse(responseCode = "200", description = "Update the customer"),
+            @ApiResponse(responseCode = "404", description = "Not update the customer"),
     })
   /*
 take care with swagger code generator if you does not indicate here @RequestBody anotation, 
