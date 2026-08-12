@@ -14,9 +14,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7.0.1
-        # Extrae el código del pull request para asegurar que estamos compilando el commit correcto del pull request
-        # más info: https://github.com/marketplace/actions/checkout#checkout-pull-request-head-commit-instead-of-merge-commit
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
