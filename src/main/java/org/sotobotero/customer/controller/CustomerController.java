@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -36,8 +38,8 @@ public class CustomerController {
 
     @Operation(summary = "Get all customers")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Found the customers"),
-            @ApiResponse(responseCode = "404", description = "Not found the customers"),
+            @ApiResponse(responseCode = "200", description = "Found the customers."),
+            @ApiResponse(responseCode = "404", description = "Not found the customers."),
     })
     @GetMapping
     public ResponseEntity<List<Customer>> getAllcustomers() {
