@@ -17,6 +17,7 @@ This project is open source under the [Licencia MIT](https://github.com/sotobote
 
 ### Requirements
 1. Java 17 or higher
+
 ### Installation
 1. Clone the repository.
 2. Enter the project folder and run the command ./mvnw package.
