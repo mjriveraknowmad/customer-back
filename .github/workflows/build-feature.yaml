@@ -9,7 +9,7 @@ on:
       - 'feature/**'
 
 jobs:
-  build:
+  build-feature:
     runs-on: ubuntu-latest
 
     steps:
