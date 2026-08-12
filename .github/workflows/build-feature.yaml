@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Extrae el código del pull request para asegurar que estamos compilando el commit correcto del pull request
+      # más info: https://github.com/marketplace/actions/checkout#checkout-pull-request-head-commit-instead-of-merge-commit
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -37,3 +39,52 @@ jobs:
         run: |
           mvn clean test package
           echo "build with maven"
+
+#######################################################
+# Automatic merge to develop branch
+#######################################################
+  merge-feature-into-develop:
+    runs-on: ubuntu-latest
+    needs: build-feature
+    if: ${{ success() }}
+    #[For a specific job, you can use jobs.<job_id>.permissions to modify the default permissions granted to the GITHUB_TOKEN](https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs)
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      ########################################################
+      # 1- Descarga
+      #Por defecto, solo se obtiene un único commit, para el ref/SHA que activó el flujo de trabajo. Establece fetch-depth: 0 para obtener todo el historial de todas las ramas y etiquetas.
+      ########################################################
+      - uses: actions/checkout@v3
+        with:
+          #Descargar el código de la rama de destino (develop)
+          ref: ${{ github.base_ref }}
+          fetch-depth: 0
+
+      # ########################################################
+      # # 2- Mergea a la rama de development
+      # ########################################################
+      - name: Merge to development branch
+        if: ${{ success() }}
+        run: |
+          git config --global user.email "EMAIL-OF-WORKFLOW@USER"
+          git config --global user.name "WORKFLOW-USER" 
+          #Using -m "mesage" on merge command ins mandatori here in order to avoid open a text editor to write a commit message
+          git merge --no-ff --verbose origin/${{ github.event.pull_request.head.ref }} -m "Merge pull request #${{ github.event.number }}"
+
+      ########################################################
+      # 3- Push de los cambios después del merge
+      ##########################################################
+
+      - name: Push changes after merge
+        if: ${{ success() }}
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.base_ref }}
+
+
+
+    
+      
