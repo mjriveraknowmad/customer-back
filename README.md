@@ -8,6 +8,7 @@ El código de este repositorio es una fuente del curso:
 
 🌟 **Contribuye y Mejora este Proyecto**
 ¡Este proyecto está en constante evolución y cualquier mejora es bienvenida! 🎉 Si encuentras algo que se pueda optimizar, tienes una idea o quieres corregir errores, no dudes en participar.
+
 ### 📌¿Quieres enviar cambios y no sabes cómo?📌
 Consulta el paso a paso [**Cómo contribuir con un proyecto en github**](https://github.com/sotobotero/CodeHub/blob/develop/README.md#-cómo-contribuir) para español or [**How to Contribute with github project**](https://github.com/sotobotero/CodeHub/blob/develop/README.md#-how-to-contribute) for English.
 ## License
