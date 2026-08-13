@@ -1,0 +1,40 @@
+# Docker build context
+.git
+.gitignore
+.gitlab-ci.yml
+.github
+.dockerignore
+.DS_Store
+*.md
+README.md
+HELP.md
+.mvn/wrapper
+mvnw
+mvnw.cmd
+nbactions.xml
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Build artifacts (opcional, mantener target para el build)
+src/main/node_modules
+node_modules
+
+# OS specific
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Test files
+src/test
+
+# Environment files
+.env
+.env.local

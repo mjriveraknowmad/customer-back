@@ -1,0 +1,144 @@
+name: Deploy artifact
+on:
+  repository_dispatch:
+    types: [deploy-artifact-event]
+jobs:
+  dowlonad-artifact-job:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read    
+    steps:
+
+      ########################################################
+      # 1-Recuperamos el checksum del artifact que se va a descargar, para compararlo con el checksum del artifact descargado
+      ########################################################
+      - run: echo ${{ github.event.client_payload.checksum }}
+
+      - name: Retrieve Payload
+        run: |
+          echo ${{ github.event.client_payload.checksum }}
+
+      - uses: dawidd6/action-download-artifact@v2
+        id: download-artifact
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: publish-jar-as-artifact.yaml
+          workflow_conclusion: success
+          name: artifactjar
+          path: /tmp/artifactjar
+          
+      - name: Display structure of downloaded files
+        run: ls -R /tmp/artifactjar
+
+
+      - name: checksum of download-artifact
+        if: success()
+        id: hash      
+        run: echo "HASH=$(sha1sum /tmp/artifactjar/${{ github.event.client_payload.artifact_name }} | awk '{ print $1 }')" >> $GITHUB_ENV
+
+
+      - name: compare checksum 
+        run: |
+          if [ "${{ env.HASH }}" == "${{ github.event.client_payload.checksum }}" ]; then
+              echo "The checksum are equals! seccesfully operations."
+          else
+              echo "¡The checksum are no equals! failure operation."            
+              exit 1;
+          fi
+
+            
+      ######################################################## 
+      # Descargamos el código fuente desde la rama base (develop) para recuperar el Dockerfile y subirlo como contexto de construcción de docker
+      ########################################################
+      
+      - uses: actions/checkout@v4       
+        if: success()
+      - run: |
+          echo print the current directory show files
+          ls -la 
+          echo preparing docker build context
+          cp .docker/Dockerfile /tmp/Dockerfile
+          cp /tmp/artifactjar/${{ github.event.client_payload.artifact_name }} /tmp/${{ github.event.client_payload.artifact_name }}
+          ls -la /tmp
+          
+      - name: Upload artifact       
+        uses: actions/upload-artifact@v4
+        with:
+          name: dockerBuildContext
+          path: |
+            /tmp/Dockerfile
+            /tmp/${{ github.event.client_payload.artifact_name }}
+
+#**************************************************************
+#2 Job for managment docker task 
+#**************************************************************
+  docker-job:
+     needs:
+        - dowlonad-artifact-job
+
+     runs-on: ubuntu-latest
+     permissions:
+       contents: read
+       actions: read
+       packages: write
+     steps: 
+
+      ######################################################## 
+      # 1- Set up QEMU, emulates the machine's processor through dynamic binary translation (free and open-source)
+      ######################################################## 
+      - name : Set up QEMU 
+        uses : docker/setup-qemu-action@v2 
+
+      ######################################################## 
+      # 2- Set up Docker Buildx 
+      ########################################################  
+      - name : Set up Docker Buildx 
+        uses : docker/setup-buildx-action@v2 
+
+      ######################################################## 
+      # 3- Login en Docker Hub, a donde vamos a subir la imagen construida, en este caso a GitHub Container Registry (ghcr.io), donde guardamos las imágenes de docker.
+      # Más info en https://docs.github.com/en/packages/learn-github-packages/introduction-to-github-packages#authenticating-to-github-packages
+      ########################################################      
+      - name : Login to Docker Hub 
+        uses : docker/login-action@v2 
+        with :
+          registry: ghcr.io
+          username: ${{ github.actor }}   
+          password : ${{ secrets.GITHUB_TOKEN }} 
+
+        ######################################################## 
+        # 4- Descarga del artifact que se va a usar como contexto de construcción de docker, y lo deja en la carpeta ./dockerBuildContext
+        # actions/download-artifact@v3, es una acción que solo permite descargar del mismo workflow, por eso, más arriba, se usa dawidd6/action-download-artifact@v2, que permite descargar artifacts de otros workflows.
+        ########################################################
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: dockerBuildContext
+          path: ./dockerBuildContext
+
+        ######################################################## 
+        # 5- Muestra la estructura de los archivos descargados, a modo de debug, para verificar que el artifact y el Dockerfile están en la carpeta ./dockerBuildContext
+        ######################################################## 
+      - name: Display structure of downloaded files
+        run: ls -R dockerBuildContext
+
+        ######################################################## 
+        # 6- Construir y subir la imagen de docker usando la acción docker/build-push-action@v4, que permite construir y subir imágenes de docker a un registro de contenedores.
+        ######################################################### 
+      - name : Build and push image using action 
+        uses : docker/build-push-action@v4 
+        with :
+          context : ./dockerBuildContext # Context where Dockerfile and artifact(.jar, .war ...) lives
+          file : ./dockerBuildContext/Dockerfile # Indicamos donde está el Dockerfile.
+          # Parámetros que nuestro Dockerfile necesita. Tanto JAR_FILE como DB_PASSWORD son variables de entorno que se usan en el archivo Dockerfile (se le pasan al Dockerfile, y en el caso de DB_PASSWORD se setea en https://github.com/mjriveraknowmad/customer-back/settings/secrets/actions)
+          # , y que se pasan como parámetros a la acción docker/build-push-action@v4, para que estén disponibles en el contexto de construcción de docker.
+          # Despues en la aplicación de java se pueden usar las variables de entorno, por ejemplo se pueden usar en el archivo application.properties, poniendo db.password=${DB_PASSWORD}
+          build-args: |      
+            JAR_FILE=${{ github.event.client_payload.artifact_name }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          push : true # Hace que publique la imagen en donde nos hemos logeado antes (de github, que por ahora es gratuita), por defecto es false, pero como queremos subir la imagen al registro de contenedores, lo ponemos a true.
+          tags : ghcr.io/${{ github.repository_owner}}/customer-back:${{ github.sha }} # El nombre completo de la imagen, incluyendo el repositorio, usuario, nombre de la imagen y etiqueta. Usando github.sha coge el hash del commit que ha disparado el workflow, para que cada imagen tenga un nombre único y no se sobreescriba. Más info en https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#about-tags
+    
+
+
