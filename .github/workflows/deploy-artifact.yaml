@@ -109,10 +109,10 @@ jobs:
 
         ######################################################## 
         # 4- Descarga del artifact que se va a usar como contexto de construcción de docker, y lo deja en la carpeta ./dockerBuildContext
-        # actions/download-artifact@v3, es una acción que solo permite descargar del mismo workflow, por eso, más arriba, se usa dawidd6/action-download-artifact@v2, que permite descargar artifacts de otros workflows.
+        # actions/download-artifact@v4, es una acción que solo permite descargar del mismo workflow, por eso, más arriba, se usa dawidd6/action-download-artifact@v2, que permite descargar artifacts de otros workflows.
         ########################################################
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dockerBuildContext
           path: ./dockerBuildContext
