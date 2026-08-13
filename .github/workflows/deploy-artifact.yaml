@@ -112,7 +112,7 @@ jobs:
         # actions/download-artifact@v3, es una acción que solo permite descargar del mismo workflow, por eso, más arriba, se usa dawidd6/action-download-artifact@v2, que permite descargar artifacts de otros workflows.
         ########################################################
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dockerBuildContext
           path: ./dockerBuildContext
