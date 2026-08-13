@@ -19,7 +19,7 @@ jobs:
          echo ${{ github.event.client_payload.base_branch }}
                
       ######################################################## 
-      # 1- Download source code from default branch in order to retrieve Dockerfile, and upload it as docker build context
+      # 1- Descargar el código fuente de la rama por defecto para poder recuperar el Dockerfile y subirlo como contexto de compilación de docker
       ########################################################
       
       - uses: actions/checkout@v4  
@@ -59,12 +59,38 @@ jobs:
            echo ls -la 
     
              
-   ######################################################## 
-      # 4- publish it as artifact
+      ######################################################## 
+      # 4- Publicar el artifact
       ######################################################## 
       - name: Publish Package
         if: success()
         uses: actions/upload-artifact@v4
         with:
          name: artifactjar
-         path: ${{ github.workspace }}/target/${{ env.ARTIFACT_NAME }}   
+         path: ${{ github.workspace }}/target/${{ env.ARTIFACT_NAME }}
+
+
+      ######################################################## 
+      # 5- Comprobar que el artifact descargado es el mismo que el publicado, y no está corrupto. 
+      # Se guarda el checksum del artifact en un JSON, que se usará más adelante ( mirar por JSON_PAYLOAD )
+      ######################################################## 
+      - name: Verify SHA1sum
+        if: success()
+        id: cal_checksum_jar
+        run: |
+          ls -la ${{ github.workspace }}/target/        
+          SHA1=$(sha1sum ${{ github.workspace }}/target/$ARTIFACT_NAME | awk '{print $1}')
+          JSON=\''{"message": "publish artifact","artifact_name":"'"$ARTIFACT_NAME"'", "checksum": "'"$SHA1"'"}'\'
+          echo JSON_PAYLOAD=$(printf '%s\n' "$JSON")  >> $GITHUB_ENV
+
+      ######################################################## 
+      # 4- Llamar al workflow: deploy-artifact.yaml pasando como payload el nombre del artifact y su checksum, para que el workflow deploy-artifact.yaml pueda descargarlo y comprobar que es el mismo que se ha publicado.
+      #########################################################
+      - name: trigger deploy artifact
+        if: success()
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          event-type: deploy-artifact-event        # el nombre del evento que se va a lanzar, es el que se ha definido en el workflow deploy-artifact.yaml   
+          client-payload: ${{fromJSON(env.JSON_PAYLOAD) }}         
